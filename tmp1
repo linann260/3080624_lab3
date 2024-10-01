@@ -1,0 +1,6 @@
+bash-4.2/builtins/common.h:5
+bash-4.2/execute_cmd.h:4
+bash-4.2/command.h:4
+bash-4.2/shell.h:3
+bash-4.2/lib/readline/readline.h:3
+bash-4.2/lib/readline/posixstat.h:3
