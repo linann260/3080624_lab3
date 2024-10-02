@@ -38,6 +38,8 @@ int main(int argc, char *argv[])
   // We want to initialize our pipes before forking so that the child can access to the same file descripters as the parent,
   // thus, being able to communicate. -Anna
 
+  char cmdbuf[BSIZE]; // Create a buffer cmdbuf to hold the command string, with size BSIZE. -Anna
+
   pid_1 = fork();
   if (pid_1 == 0) {
     /* First Child */
@@ -47,7 +49,6 @@ int main(int argc, char *argv[])
 		//So, redirect standard output of this child process to p1's write end - written data will be automatically available at pipe p1's read end
 		//And, close all other pipe ends except the ones used to redirect the above OUTPUT (very important)
 
-    char cmdbuf[BSIZE]; // Create a buffer cmdbuf to hold the command string, with size BSIZE. -Anna
     bzero(cmdbuf, BSIZE); // Clear the memory of the buffer array by setting all bytes (the size of BSIZE) to zero. -Anna
     
     sprintf(cmdbuf, "%s %s -name \'*\'.[h]", FIND_EXEC, argv[1]); // Construct the command string that 
@@ -85,7 +86,6 @@ int main(int argc, char *argv[])
 		//So, redirect standard output of this child process to p2's write end - written data will be automatically available at pipe p2's read end
 		//And, close all other pipe ends except the ones used to redirect the above two INPUT/OUTPUT (very important)
 
-    char cmdbuf[BSIZE];
     bzero(cmdbuf, BSIZE);
     sprintf(cmdbuf, "%s %s -c %s", XARGS_EXEC, GREP_EXEC, argv[2]);
 
@@ -117,7 +117,6 @@ int main(int argc, char *argv[])
 		//So, redirect standard output of this child process to p3's write end - written data will be automatically available at pipe p3's read end
 		//And, close all other pipe ends except the ones used to redirect the above two INPUT/OUTPUT (very important)
 
-    char cmdbuf[BSIZE];
     bzero(cmdbuf, BSIZE);
     sprintf(cmdbuf, "%s -t : +1.0 -2.0 --numeric --reverse", SORT_EXEC);
 
@@ -148,11 +147,16 @@ int main(int argc, char *argv[])
 		//Output of this child process should directly be to the standard output and NOT to any pipe
 		//And, close all other pipe ends except the ones used to redirect the above INPUT (very important)
 
-    char cmdbuf[BSIZE];
     bzero(cmdbuf, BSIZE);
     sprintf(cmdbuf, "%s --line=%s", HEAD_EXEC, argv[3]);
     
     dup2(p3[0], STDIN_FILENO); // Redirect the input to the read end of pipe p3, which is p3[0]. -Anna
+
+    close(p1[0]);
+    close(p1[1]);
+    close(p2[0]);
+    close(p2[1]);
+    close(p3[1]);
 
     //STEP 8
     //Invoke execl for head (use HEAD_EXEC as path). Print only the first 5 results in the output
@@ -162,14 +166,14 @@ int main(int argc, char *argv[])
     }
 
     exit(0);
-
-    close(p1[0]); // Close the read end of pipe p1 because we are not using it. -Anna
-    close(p1[1]); // Close the write end of pipe p1 because we are not using it. -Anna
-    close(p2[0]); // Close the read end of pipe p2 because we are not using it. -Anna
-    close(p2[1]); // Close the write end of pipe p2 because we are not using it. -Anna
-    close(p3[0]); // Close the read end of pipe p3 because we are not using it. -Anna
-    close(p3[1]); // Close the write end of pipe p3 because we are not using it. -Anna
   }
+
+  close(p1[0]); // Close the read end of pipe p1 because we are not using it. -Anna
+  close(p1[1]); // Close the write end of pipe p1 because we are not using it. -Anna
+  close(p2[0]); // Close the read end of pipe p2 because we are not using it. -Anna
+  close(p2[1]); // Close the write end of pipe p2 because we are not using it. -Anna
+  close(p3[0]); // Close the read end of pipe p3 because we are not using it. -Anna
+  close(p3[1]); // Close the write end of pipe p3 because we are not using it. -Anna
 
   if ((waitpid(pid_1, &status, 0)) == -1) {
     fprintf(stderr, "Process 1 encountered an error. ERROR%d", errno);
