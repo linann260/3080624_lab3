@@ -56,11 +56,13 @@ int main(int argc, char *argv[])
                                                                   // defined by argv[1]. FIND_EXEC is the path to the find command. -Anna
 
     dup2(p1[1], STDOUT_FILENO); // Redirect the output to the write end of pipe p1, which is p1[1]. -Anna
+
     close(p1[0]); // Close the read end of pipe p1 because we are not using it. -Anna
     close(p2[0]); // Close the read end of pipe p2 because we are not using it. -Anna
     close(p2[1]); // Close the write end of pipe p2 because we are not using it. -Anna
     close(p3[0]); // Close the read end of pipe p3 because we are not using it. -Anna
     close(p3[1]); // Close the write end of pipe p3 because we are not using it. -Anna
+    
     //STEP 3
     //Prepare a command string representing the find command (follow example from the slide)
     //Invoke execl for bash and find (use BASH_EXEC and FIND_EXEC as paths)
@@ -71,6 +73,7 @@ int main(int argc, char *argv[])
     // If execl fails (meaning there is too many processes running), return and handle the error. -Anna
     if ((execl(BASH_EXEC, BASH_EXEC, "-c", cmdbuf, (char*) 0)) < 0) {
       fprintf(stderr, "\nError execing find. ERROR#%d\n", errno); // Error message.
+      return EXIT_FAILURE;
     }
 
     exit(0);
@@ -102,11 +105,12 @@ int main(int argc, char *argv[])
 
     if ((execl(BASH_EXEC, BASH_EXEC, "-c", cmdbuf, (char*) 0)) < 0) {
       fprintf(stderr, "\nError execing xargs grep. ERROR#%d\n", errno);
+      return EXIT_FAILURE;
     }
 
     exit(0);
   }
-
+  
   pid_3 = fork();
   if (pid_3 == 0) {
     /* Third Child */
@@ -133,6 +137,7 @@ int main(int argc, char *argv[])
 
     if ((execl(BASH_EXEC, BASH_EXEC, "-c", cmdbuf, (char*) 0)) < 0) {
       fprintf(stderr, "\nError execing sort. ERROR#%d\n", errno);
+      return EXIT_FAILURE;
     }
 
     exit(0);
@@ -152,17 +157,18 @@ int main(int argc, char *argv[])
     
     dup2(p3[0], STDIN_FILENO); // Redirect the input to the read end of pipe p3, which is p3[0]. -Anna
 
-    close(p1[0]);
-    close(p1[1]);
-    close(p2[0]);
-    close(p2[1]);
-    close(p3[1]);
+    close(p1[0]); // Close the read end of pipe p1 beacuse we are not using it. -Anna
+    close(p1[1]); // Close the write end of pipe p1 beacuse we are not using it. -Anna
+    close(p2[0]); // Close the read end of pipe p2 beacuse we are not using it. -Anna
+    close(p2[1]); // Close the write end of pipe p2 beacuse we are not using it. -Anna
+    close(p3[1]); // Close the write end of pipe p3 beacuse we are not using it. -Anna
 
     //STEP 8
     //Invoke execl for head (use HEAD_EXEC as path). Print only the first 5 results in the output
 
-    if ((execl(HEAD_EXEC, BASH_EXEC, "-c", cmdbuf, (char*) 0)) < 0) {
+    if ((execl(BASH_EXEC, BASH_EXEC, "-c", cmdbuf, (char*) 0)) < 0) {
       fprintf(stderr, "\nError execing sort. ERROR#%d\n", errno);
+      return EXIT_FAILURE;
     }
 
     exit(0);
