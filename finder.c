@@ -47,13 +47,6 @@ int main(int argc, char *argv[])
 		//So, redirect standard output of this child process to p1's write end - written data will be automatically available at pipe p1's read end
 		//And, close all other pipe ends except the ones used to redirect the above OUTPUT (very important)
     
-    char cmdbuf[BSIZE]; // Create a buffer cmdbuf to hold the command string, with size BSIZE. -Anna
-    bzero(cmdbuf, BSIZE); // Clear the memory of the buffer array by setting all bytes (the size of BSIZE) to zero. -Anna
-    
-    sprintf(cmdbuf, "%s %s -name \'*\'.[h]", FIND_EXEC, argv[1]); // Construct the command string that 
-                                                                  // searches for all files in the specified directory
-                                                                  // defined by argv[1]. FIND_EXEC is the path to the find command. -Anna
-
     dup2(p1[1], STDOUT_FILENO); // Redirect the output to the write end of pipe p1, which is p1[1]. -Anna
 
     close(p1[0]); // Close the read end of pipe p1 because we are not using it. -Anna
@@ -66,14 +59,7 @@ int main(int argc, char *argv[])
     //Prepare a command string representing the find command (follow example from the slide)
     //Invoke execl for bash and find (use BASH_EXEC and FIND_EXEC as paths)
 
-    // execl function replaces the current process with a new process. -Anna
-    // It is executing BASH_EXEC with the c flag, which tells Bash to execute the command stored in cmdbuff. -Anna
-    // (char*) 0 is a null pointer that marks the end of the argument list for execl. -Anna
-    // If execl fails (meaning there is too many processes running), return and handle the error. -Anna
-    if ((execl(BASH_EXEC, BASH_EXEC, "-c", cmdbuf, (char*) 0)) < 0) {
-      fprintf(stderr, "\nError execing find. ERROR#%d\n", errno); // Error message.
-      return EXIT_FAILURE;
-    }
+    execl(FIND_EXEC, FIND_EXEC, argv[1], "-name", "*.h", NULL);
 
     exit(0);
   }
@@ -88,10 +74,6 @@ int main(int argc, char *argv[])
 		//So, redirect standard output of this child process to p2's write end - written data will be automatically available at pipe p2's read end
 		//And, close all other pipe ends except the ones used to redirect the above two INPUT/OUTPUT (very important)
 
-    char cmdbuf[BSIZE];
-    bzero(cmdbuf, BSIZE);
-    sprintf(cmdbuf, "%s %s -c %s", XARGS_EXEC, GREP_EXEC, argv[2]);
-
     dup2(p1[0], STDIN_FILENO); // Redirect the input to the read end of pipe p1, which is p1[0]. -Anna
     dup2(p2[1], STDOUT_FILENO); // Redirect the output to the write end of pipe p2, which is p2[1]. -Anna
 
@@ -103,10 +85,7 @@ int main(int argc, char *argv[])
     //STEP 5
     //Invoke execl for xargs and grep (use XARGS_EXEC and GREP_EXEC as paths)
 
-    if ((execl(BASH_EXEC, BASH_EXEC, "-c", cmdbuf, (char*) 0)) < 0) {
-      fprintf(stderr, "\nError execing xargs grep. ERROR#%d\n", errno);
-      return EXIT_FAILURE;
-    }
+    execl(XARGS_EXEC, XARGS_EXEC, GREP_EXEC, "-c", argv[2], NULL);
 
     exit(0);
   }
@@ -121,10 +100,6 @@ int main(int argc, char *argv[])
 		//So, redirect standard output of this child process to p3's write end - written data will be automatically available at pipe p3's read end
 		//And, close all other pipe ends except the ones used to redirect the above two INPUT/OUTPUT (very important)
 
-    char cmdbuf[BSIZE];
-    bzero(cmdbuf, BSIZE);
-    sprintf(cmdbuf, "%s -t : +1.0 -2.0 --numeric --reverse", SORT_EXEC);
-
     dup2(p2[0], STDIN_FILENO); // Redirect the input to the read end of pipe p2, which is p2[0]. -Anna
     dup2(p3[1], STDOUT_FILENO); // Redirect the output to the write end of pipe p3, which is p3[1]. -Anna
 
@@ -136,10 +111,7 @@ int main(int argc, char *argv[])
     //STEP 7
     //Invoke execl for sort (use SORT_EXEC as path)
 
-    if ((execl(BASH_EXEC, BASH_EXEC, "-c", cmdbuf, (char*) 0)) < 0) {
-      fprintf(stderr, "\nError execing sort. ERROR#%d\n", errno);
-      return EXIT_FAILURE;
-    }
+    execl(SORT_EXEC, SORT_EXEC, "-t", ":", "+1.0", "-2.0", "--numeric", "--reverse", NULL);
 
     exit(0);
   }
@@ -153,10 +125,6 @@ int main(int argc, char *argv[])
 		//Output of this child process should directly be to the standard output and NOT to any pipe
 		//And, close all other pipe ends except the ones used to redirect the above INPUT (very important)
     
-    char cmdbuf[BSIZE];
-    bzero(cmdbuf, BSIZE);
-    sprintf(cmdbuf, "%s --line=%s", HEAD_EXEC, argv[3]);
-    
     dup2(p3[0], STDIN_FILENO); // Redirect the input to the read end of pipe p3, which is p3[0]. -Anna
 
     close(p1[0]); // Close the read end of pipe p1 beacuse we are not using it. -Anna
@@ -168,10 +136,7 @@ int main(int argc, char *argv[])
     //STEP 8
     //Invoke execl for head (use HEAD_EXEC as path). Print only the first 5 results in the output
 
-    if ((execl(BASH_EXEC, BASH_EXEC, "-c", cmdbuf, (char*) 0)) < 0) {
-      fprintf(stderr, "\nError execing sort. ERROR#%d\n", errno);
-      return EXIT_FAILURE;
-    }
+    execl(HEAD_EXEC, HEAD_EXEC, "--lines", argv[3], NULL);
 
     exit(0);
   }
